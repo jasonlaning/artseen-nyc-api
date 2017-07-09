@@ -134,7 +134,6 @@ router.get('/discussions', loggedIn, (req, res) => {
 // GET user's community activity
 router.get('/users/me/community', loggedIn, (req, res) => {
 
-	console.log(req.user.favoriteUsers);
 	Comment
 		.find()
 		.where('username').in(req.user.favoriteUsers)
@@ -299,7 +298,6 @@ router.post('/discussions/comment', loggedIn, (req, res) => {
 			{new: true})
 		.then((_discussion) => {
 			discussion = _discussion;
-			console.log('discussion:', discussion);
 			Comment
 				.create({
 					username: req.user.username,
@@ -312,7 +310,6 @@ router.post('/discussions/comment', loggedIn, (req, res) => {
 				})
 		})
 		.then(() => {
-			console.log('discussion: ', discussion)
 			return res.status(201).json({discussion: discussion.apiRepr()})
 		})
 		.catch(err => {
