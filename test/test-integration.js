@@ -6,12 +6,85 @@ const bcrypt = require('bcryptjs');
 const should = chai.should();
 
 const {User} = require('../users/models');
+const {Discussion} = require('../discussions/models');
+const {Comment} = require('../comments/models');
+
 const {app, runServer, closeServer} = require('../server');
 const {TEST_DATABASE_URL} = require('../config');
 
 chai.use(chaiHttp);
 
-function seedUserData() {
+const seedCommentData = () => {
+	const seedData = [];
+	for (let i=1; i<=10; i++) {
+		seedData.push(generateCommentData());
+	}
+
+	seedData[5].username = 'friend';
+	seedData[7].username = 'friend';
+
+	return Comment.create(seedData);
+}
+
+const generateCommentData = () => {
+	return {
+		username: faker.internet.userName(),
+		date: faker.date.past(),
+		text: faker.lorem.sentence(),
+		discussion: {
+			id: faker.random.uuid(),
+			name: faker.lorem.sentence()
+		}
+	}
+}
+
+const seedDiscussionData = () => {
+	const seedData = [];
+
+	for (let i=1; i<=10; i++) {
+		seedData.push(generateDiscussionData());
+	}
+
+	seedData[5].searchTerms.push('picasso');
+	seedData[7].searchTerms.push('picasso');
+	seedData[2].id = 'knownDiscussionId';
+	seedData[2].name = 'knownDiscussionName';
+
+	return Discussion.create(seedData);
+}
+
+const generateDiscussionData = () => {
+	return {
+		id: faker.random.uuid(),
+		href: faker.internet.url(),
+		name: faker.lorem.sentence(),
+		lastActiveDate: faker.date.past(),
+		venue: {
+			name: faker.company.companyName(),
+			address: faker.address.streetAddress(),
+			area: faker.address.county()
+		},
+		description: faker.lorem.sentence(),
+		image: faker.image.imageUrl(),
+		dateStart: faker.date.past(),
+		dateEnd: faker.date.future(),
+		comments: [
+			{
+				date: faker.date.past(),
+				username: faker.internet.userName(),
+				text: faker.lorem.sentence()
+			},
+			{
+				date: faker.date.past(),
+				username: faker.internet.userName(),
+				text: faker.lorem.sentence()
+			}
+		],
+		searchTerms: [faker.lorem.word(), faker.lorem.word()]
+	}
+}
+
+const seedUserData = () => {
 	const username = 'testuser';
 	const password = 'password';
 	const seedData = [];
@@ -22,6 +95,9 @@ function seedUserData() {
 
 	seedData[5].username = username;
 	seedData[5].password = password;
+	seedData[5].favoriteUsers.push('friend');
+	seedData[6].username = 'userToView';
+	seedData[2].username = 'friend';
 	const hashedPassword = bcrypt.hash(password, 10);
 	return hashedPassword
 		.then(_hashedPassword => {
@@ -31,7 +107,7 @@ function seedUserData() {
 		})
 }
 
-function generateUserData() {
+const generateUserData = () => {
 	return {
 		username: faker.internet.userName(),
 		password: faker.internet.password(),
@@ -42,18 +118,26 @@ function generateUserData() {
 	}
 }
 
-function tearDownDb() {
+const tearDownDb = () => {
 	console.warn('Deleting database\n');
 	return mongoose.connection.dropDatabase();
 }
 
-describe('Users API resource', function() {
+describe('API resource for users, comments, and discussions', function() {
 	before(function() {
 		return runServer(TEST_DATABASE_URL);
 	});
 
 	beforeEach(function() {
 		return seedUserData();
+	});
+
+	beforeEach(function() {
+		return seedDiscussionData();
+	});
+
+	beforeEach(function() {
+		return seedCommentData();
 	});
 
 	afterEach(function() {
@@ -88,7 +172,7 @@ describe('Users API resource', function() {
 		it('should return user that is signed in', function() {
 			let agent = chai.request.agent(app);
 			return agent
-				.get('/api/users/login') // first have to log in
+				.get('/api/users/login')
 				.auth('testuser', 'password')
 				.then(() => {				
 					return agent.get('/api/users/me')
@@ -119,6 +203,104 @@ describe('Users API resource', function() {
 		});
 	});
 
+	describe('GET endpoint to view other user profiles', function() {
+
+		it('should get the other user', function() {
+
+			let agent = chai.request.agent(app);
+			let username = 'testuser';
+			let password = 'password';
+			let userToView = 'userToView';
+
+			return agent
+				.get('/api/users/login')
+				.auth(username, password)
+				.then(() => {				
+					return agent
+						.get(`/api/users/${userToView}`)
+						.then(res => {							
+							res.should.have.status(200);
+							res.body.user.username.should.equal(userToView);
+							res.body.user.should.include.keys(
+								'username', 'location', 'about', 'profilePicURL', 'favoriteUsers');
+						})
+				})
+		})
+	})
+
+	describe('GET endpoint to search discussions', function() {
+
+		it('should return discussions matching the search terms', function() {
+			let agent = chai.request.agent(app);
+			let username = 'testuser';
+			let password = 'password';
+			let fakeSearchTerm = 'picasso';
+
+			return agent
+				.get('/api/users/login') 
+				.auth(username, password)
+				.then(() => {				
+					return agent
+						.get(`/api/discussion/${fakeSearchTerm}`)
+						.then(res => {
+							res.should.have.status(200);
+							res.body.discussions.forEach(discussion => {
+								discussion.searchTerms.should.contain(fakeSearchTerm);
+							});
+						})
+				})
+		})
+	})
+
+	describe('GET endpoint for most recently active discussions', function() {
+
+		it('should return the most recently active discussions', function() {
+			let agent = chai.request.agent(app);
+			let username = 'testuser';
+			let password = 'password';
+
+			return agent
+				.get('/api/users/login') 
+				.auth(username, password)
+				.then(() => {				
+					return agent
+						.get('/api/discussions')
+						.then(res => {
+							res.should.have.status(200);
+							res.body.discussions.forEach(discussion => {
+								discussion.should.include.keys(
+									'id', 'href', 'name', 'lastActiveDate', 'venue',
+									'description', 'image', 'dateStart', 'dateEnd',
+									'comments', 'searchTerms')
+							})
+						})
+				})
+		})
+	})
+
+	describe('GET endpoint for community activity', function() {
+
+		it('should return the comments from user\'s favorite users', function() {
+				let agent = chai.request.agent(app);
+				let username = 'testuser';
+				let password = 'password';
+
+				return agent
+					.get('/api/users/login') 
+					.auth(username, password)
+					.then(() => {				
+						return agent
+							.get('/api/users/me/community')
+							.then(res => {
+								res.should.have.status(200);
+								res.body.comments.forEach(comment => {
+									comment.username.should.equal('friend')
+								})
+							})
+					})
+		})
+	})
+
 	describe('POST endpoint to create new user', function() {
 
 		it('should create a new user', function() {
@@ -142,7 +324,151 @@ describe('Users API resource', function() {
 				})
 		});
 	});
-	
+
+	describe('POST endpoint to add new favorite user', function() {
+
+		it('should add a new favorite user', function() {
+			let agent = chai.request.agent(app);
+			let username = 'testuser';
+			let password = 'password';
+
+			return agent
+				.get('/api/users/login') 
+				.auth(username, password)
+				.then(() => {				
+					return agent
+						.post('/api/users/me/favorites')
+						.send({username: 'newFavoriteUser'})
+						.then(res => {
+							res.should.have.status(201);
+							res.body.user.favoriteUsers.should.contain('newFavoriteUser');
+						})
+				})
+		})
+	})
+
+	describe('POST endpoint to create new discussion', function() {
+
+		it('should create a new discussion', function() {
+			let agent = chai.request.agent(app);
+			let username = 'testuser';
+			let password = 'password';
+			let fakeDiscussion = generateDiscussionData();
+
+			return agent
+				.get('/api/users/login') 
+				.auth(username, password)
+				.then(() => {				
+					return agent
+						.post('/api/discussions')
+						.send(fakeDiscussion)
+						.then(res => {
+							res.should.have.status(201);
+							res.body.discussion.href.should.equal(fakeDiscussion.href);
+							res.body.discussion.name.should.equal(fakeDiscussion.name);
+							res.body.discussion.venue.name.should.equal(fakeDiscussion.venue.name);
+							res.body.discussion.venue.address.should.equal(fakeDiscussion.venue.address);
+							res.body.discussion.venue.area.should.equal(fakeDiscussion.venue.area);
+							res.body.discussion.description.should.equal(fakeDiscussion.description);
+							res.body.discussion.image.should.equal(fakeDiscussion.image);
+							res.body.discussion.searchTerms.should.contain(fakeDiscussion.searchTerms[0]);
+							res.body.discussion.searchTerms.should.contain(fakeDiscussion.searchTerms[1]);
+						})
+				})
+		})
+	})
+
+	describe('POST endpoint to create new comment', function() {
+
+		it('should create a new comment', function() {
+			let agent = chai.request.agent(app);
+			let username = 'testuser';
+			let password = 'password';
+			let fakeComment = generateCommentData();
+			fakeComment.id = 'knownDiscussionId';
+			fakeComment.name = 'knownDiscussionName';
+
+			return agent
+				.get('/api/users/login') 
+				.auth(username, password)
+				.then(() => {				
+					return agent
+						.post('/api/discussions/comment')
+						.send(fakeComment)
+						.then(res => {
+							let resComment = {};
+							res.body.discussion.comments.forEach(comment => {
+								if (comment.text === fakeComment.text) {
+									resComment = comment;
+								}
+							})
+							res.should.have.status(201);
+							resComment.text.should.equal(fakeComment.text);
+							res.body.discussion.id.should.equal(fakeComment.id);
+							res.body.discussion.name.should.equal(fakeComment.name);							
+						})
+				})
+		})
+	})
+
+	describe('PUT endpoint to edit user profile', function() {
+
+		it('should update profile info', function() {
+			let agent = chai.request.agent(app);
+			let username = 'testuser';
+			let password = 'password';
+			let newProfileInfo = {
+				location: faker.address.city(),
+				about: faker.lorem.sentence(),
+				profilePicURL: faker.image.imageUrl(),
+			}
+
+			return agent
+				.get('/api/users/login') 
+				.auth(username, password)
+				.then(() => {				
+					return agent
+						.put('/api/users/me')
+						.send(newProfileInfo)
+						.then(res => {
+							res.should.have.status(200);
+							res.body.user.location.should.equal(newProfileInfo.location);
+							res.body.user.about.should.equal(newProfileInfo.about);
+							res.body.user.profilePicURL.should.equal(newProfileInfo.profilePicURL);
+						})
+				})
+		})
+	})
+
+	describe('DELETE endpoint for removing favorite user', function() {
+
+		it('should remove the username from favorite users', function() {
+			let agent = chai.request.agent(app);
+			let username = 'testuser';
+			let password = 'password';
+			let newFavorite = {
+				username: 'myNewFavorite'
+			};
+
+			return agent
+				.get('/api/users/login') 
+				.auth(username, password)
+				.then(() => {				
+					return agent
+						.post('/api/users/me/favorites')
+						.send(newFavorite)
+						.then(() => {
+							return agent
+							.delete('/api/users/me/favorites')
+								.send(newFavorite)
+								.then(res => {
+									res.should.have.status(200);
+									res.body.user.favoriteUsers.should.not.contain(newFavorite);
+								})
+						})
+				})
+		})
+	})
 
 	describe('DELETE endpoint for user account', function() {
 
