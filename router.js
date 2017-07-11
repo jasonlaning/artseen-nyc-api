@@ -62,7 +62,7 @@ function loggedIn(req, res, next) {
 	if (req.user) {
 		next();
 	} else {
-		res.json({message: 'Please sign in'});
+		res.status(400).json({message: 'Please sign in'});
 	}
 }
 
