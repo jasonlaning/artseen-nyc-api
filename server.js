@@ -11,7 +11,7 @@ const {PORT, DATABASE_URL} = require('./config');
 
 mongoose.Promise = global.Promise;
 
-app.use(cors());
+app.use(cors({origin: ['http://localhost:3000', 'https://artseennyc.netlify.com']}));
 
 app.use(morgan('common'));
 

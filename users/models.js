@@ -20,7 +20,8 @@ const userSchema = mongoose.Schema({
 		type: String
 	},
 	profilePicURL: {
-		type: String
+		type: String,
+		default: '/blank-profile-pic.png'
 	},
 	favoriteUsers: {
 		type: Array
