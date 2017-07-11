@@ -3,6 +3,7 @@ const express = require('express');
 const jsonParser = require('body-parser').json();
 const passport = require('passport');
 const moment = require('moment');
+const cors = require('cors');
 
 const {User} = require('./users/models');
 const {Discussion} = require('./discussions/models');
@@ -11,6 +12,8 @@ const {Comment} = require('./comments/models');
 const router = express.Router();
 
 router.use(jsonParser);
+
+router.use(cors({credentials: true, origin: 'https://artseennyc.netlify.com'}));
 
 const basicStrategy = new BasicStrategy((username, password, callback) => {
 	let user;

@@ -2,7 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const cors = require('cors');
+
 const app = express();
 
 const {router: ApiRouter} = require('./router');
@@ -10,8 +10,6 @@ const {router: ApiRouter} = require('./router');
 const {PORT, DATABASE_URL} = require('./config');
 
 mongoose.Promise = global.Promise;
-
-app.use(cors({origin: ['http://localhost:3000', 'https://artseennyc.netlify.com']}));
 
 app.use(morgan('common'));
 
