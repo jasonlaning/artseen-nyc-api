@@ -102,6 +102,19 @@ router.get('/users/:username', loggedIn, (req, res, next) => {
 
 })
 
+// GET single discussion
+router.get('/single-discussion/:id', loggedIn, (req, res, next) => {
+
+	Discussion
+		.findOne({id: req.params.id})
+		.then(discussion => {
+			return res.status(200).json({discussion});
+		})
+		.catch(err => {
+			res.status(500).json({message: `Internal server error: ${err}`})
+		})
+})
+
 // GET for discussion search
 router.get('/discussion/:q', loggedIn, (req, res) => {
 
@@ -138,9 +151,12 @@ router.get('/discussions', loggedIn, (req, res) => {
 // GET user's community activity
 router.get('/users/me/community', loggedIn, (req, res) => {
 
+	const community = req.user.favoriteUsers;
+	community.push(req.user.username);
+
 	Comment
 		.find()
-		.where('username').in(req.user.favoriteUsers)
+		.where('username').in(community)
 		.sort({date: -1})
 		.limit(10)
 		.then(comments => {
@@ -242,29 +258,37 @@ router.post('/discussions', loggedIn, (req, res) => {
 	}
 
 	Discussion
-		.create({
-			id: req.body.id,
-			href: req.body.href,
-			name: req.body.name,
-			venue: {
-				name: req.body.venue.name,
-				address: req.body.venue.address,
-				area: req.body.venue.area
-			},
-			description: req.body.description,
-			image: req.body.image,
-			dateStart: req.body.dateStart,
-			dateEnd: req.body.dateEnd,
-			searchTerms: req.body.searchTerms
-		})
-		.then(discussion => {
-			return res.status(201).json({discussion: discussion.apiRepr()});
+		.find({id: req.body.id})
+		.count()
+		.exec()
+		.then(count => {
+			if (count > 0) {
+				return res.status(422).json({message: 'Discussion already exists'});
+			}
+			Discussion
+				.create({
+					id: req.body.id,
+					href: req.body.href,
+					name: req.body.name,
+					venue: {
+						name: req.body.venue.name,
+						address: req.body.venue.address,
+						area: req.body.venue.area
+					},
+					description: req.body.description,
+					image: req.body.image,
+					dateStart: req.body.dateStart,
+					dateEnd: req.body.dateEnd,
+					searchTerms: req.body.searchTerms
+				})
+				.then(discussion => {
+					return res.status(201).json({discussion: discussion.apiRepr()});
+				})
 		})
 		.catch(err => {
 			console.log(err);
 			res.status(500).json({message: 'Internal server error'});
 		});
-
 });
 
 // POST new comment
@@ -274,7 +298,7 @@ router.post('/discussions/comment', loggedIn, (req, res) => {
 		return res.status(400).json({message: 'No request body'});
 	}
 
-	const requiredFields = ['id', 'name', 'text'];
+	const requiredFields = ['discussionId', 'discussionName', 'text'];
 
 	for (let i = 0; i < requiredFields.length; i++) {
 		const field = requiredFields[i];
@@ -294,7 +318,7 @@ router.post('/discussions/comment', loggedIn, (req, res) => {
 	let discussion;
 
 	Discussion
-		.findOneAndUpdate({id: req.body.id}, 
+		.findOneAndUpdate({id: req.body.discussionId}, 
 			{$set: {
 				lastActiveDate: dateUpdated
 			},
@@ -308,8 +332,8 @@ router.post('/discussions/comment', loggedIn, (req, res) => {
 					date: dateUpdated,
 					text: req.body.text,
 					discussion: {
-						id: req.body.id,
-						name: req.body.name
+						id: req.body.discussionId,
+						name: req.body.discussionName
 					}
 				})
 		})

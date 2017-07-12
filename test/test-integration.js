@@ -228,6 +228,32 @@ describe('API resource for users, comments, and discussions', function() {
 		})
 	})
 
+	describe('GET endpoint to  retrieve a single discussion by id', function() {
+
+		it('should return a single discussion by id', function() {
+
+			let agent = chai.request.agent(app);
+			let username = 'testuser';
+			let password = 'password';
+			let discussionToFind = 'knownDiscussionId';
+
+			return agent
+				.get('/api/users/login')
+				.auth(username, password)
+				.then(() => {				
+					return agent
+						.get(`/api/single-discussion/${discussionToFind}`)
+						.then(res => {
+							res.should.have.status(200);
+							res.body.discussion.id.should.equal(discussionToFind);
+							res.body.discussion.should.include.keys(
+								'id', 'href', 'name', 'lastActiveDate', 'venue', 'description',
+								'image', 'dateStart', 'dateEnd', 'comments');
+						})
+				})
+		})
+	})
+
 	describe('GET endpoint to search discussions', function() {
 
 		it('should return discussions matching the search terms', function() {
@@ -385,8 +411,8 @@ describe('API resource for users, comments, and discussions', function() {
 			let username = 'testuser';
 			let password = 'password';
 			let fakeComment = generateCommentData();
-			fakeComment.id = 'knownDiscussionId';
-			fakeComment.name = 'knownDiscussionName';
+			fakeComment.discussionId = 'knownDiscussionId';
+			fakeComment.discussionName = 'knownDiscussionName';
 
 			return agent
 				.get('/api/users/login') 
@@ -404,8 +430,8 @@ describe('API resource for users, comments, and discussions', function() {
 							})
 							res.should.have.status(201);
 							resComment.text.should.equal(fakeComment.text);
-							res.body.discussion.id.should.equal(fakeComment.id);
-							res.body.discussion.name.should.equal(fakeComment.name);							
+							res.body.discussion.id.should.equal(fakeComment.discussionId);
+							res.body.discussion.name.should.equal(fakeComment.discussionName);							
 						})
 				})
 		})
