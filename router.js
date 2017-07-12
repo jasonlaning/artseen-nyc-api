@@ -8,12 +8,13 @@ const cors = require('cors');
 const {User} = require('./users/models');
 const {Discussion} = require('./discussions/models');
 const {Comment} = require('./comments/models');
+const {CLIENT_URL} = require('./config');
 
 const router = express.Router();
 
 router.use(jsonParser);
 
-router.use(cors({credentials: true, origin: 'https://artseennyc.netlify.com'}));
+router.use(cors({credentials: true, origin: CLIENT_URL}));
 
 const basicStrategy = new BasicStrategy((username, password, callback) => {
 	let user;
