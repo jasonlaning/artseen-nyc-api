@@ -258,12 +258,10 @@ router.post('/discussions', loggedIn, (req, res) => {
 	}
 
 	Discussion
-		.find({id: req.body.id})
-		.count()
-		.exec()
-		.then(count => {
-			if (count > 0) {
-				return res.status(422).json({message: 'Discussion already exists'});
+		.findOne({id: req.body.id})
+		.then(discussion => {
+			if (discussion) {
+				return res.status(200).json({discussion, message: 'Discussion already exists'});
 			}
 			Discussion
 				.create({
