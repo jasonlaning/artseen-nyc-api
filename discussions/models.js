@@ -48,6 +48,9 @@ const discussionSchema = mongoose.Schema({
 			},
 			text: {
 				type: String
+			},
+			profilePicURL: {
+			type: String
 			}
 		}
 	],
