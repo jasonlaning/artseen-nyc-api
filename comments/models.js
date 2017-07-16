@@ -6,6 +6,9 @@ const commentSchema = mongoose.Schema({
 	username: {
 		type: String
 	},
+	profilePicURL: {
+		type: String
+	},
 	date: {
 		type: Date
 	},

@@ -310,7 +310,8 @@ router.post('/discussions/comment', loggedIn, (req, res) => {
 	const comment = {
 		date: dateUpdated,
 		username: req.user.username,
-		text: req.body.text
+		text: req.body.text,
+		profilePicURL: req.user.profilePicURL
 	}
 
 	let discussion;
@@ -327,6 +328,7 @@ router.post('/discussions/comment', loggedIn, (req, res) => {
 			Comment
 				.create({
 					username: req.user.username,
+					profilePicURL: req.user.profilePicURL,
 					date: dateUpdated,
 					text: req.body.text,
 					discussion: {
