@@ -188,13 +188,34 @@ router.get('/users/me/community', loggedIn, (req, res) => {
 	const community = req.user.favoriteUsers;
 	community.push(req.user.username);
 
+	const commentsWithImages = []
+
 	Comment
 		.find()
 		.where('username').in(community)
 		.sort({date: -1})
 		.limit(10)
+		.then(_comments => {
+			console.log('1', _comments);
+			let commentsWithImages = [];
+			_comments.forEach(comment => {
+				console.log('2', comment)
+				User
+					.find({username: comment.username})
+					.then(user => {
+						console.log('3', user)
+						comment.profilePicURL = user.profilePicURL;
+						console.log('4', comment)
+						commentsWithImages.push(comment)
+						console.log('5', commentsWithImages)
+					})
+			})
+			console.log('6', commentsWithImages);
+		})
+		.exec()
 		.then(comments => {
-			return res.status(200).json({comments})
+			console.log('7', commentsWithImages);
+			return res.status(200).json({comments: commentsWithImages})
 		})
 		.catch(err => {
 			res.status(500).json({message: `Internal server error: ${err}`})
