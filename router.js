@@ -108,7 +108,20 @@ router.get('/single-discussion/:id', loggedIn, (req, res, next) => {
 	Discussion
 		.findOne({id: req.params.id})
 		.then(discussion => {
-			return res.status(200).json({discussion});
+			let usernames = discussion.comments.map(comment => comment.username);
+			User
+				.find()
+				.where('username').in(usernames)
+				.then(users => {
+					discussion.comments.forEach(comment => {
+						users.forEach(user => {
+							if (comment.username === user.username) {
+								comment.profilePicURL = user.profilePicURL;
+							}
+						})
+					})
+					return res.status(200).json({discussion})
+				})
 		})
 		.catch(err => {
 			res.status(500).json({message: `Internal server error: ${err}`})
@@ -188,34 +201,26 @@ router.get('/users/me/community', loggedIn, (req, res) => {
 	const community = req.user.favoriteUsers;
 	community.push(req.user.username);
 
-	const commentsWithImages = []
-
 	Comment
 		.find()
 		.where('username').in(community)
 		.sort({date: -1})
 		.limit(10)
-		.then(_comments => {
-			console.log('1', _comments);
-			let commentsWithImages = [];
-			_comments.forEach(comment => {
-				console.log('2', comment)
-				User
-					.find({username: comment.username})
-					.then(user => {
-						console.log('3', user)
-						comment.profilePicURL = user.profilePicURL;
-						console.log('4', comment)
-						commentsWithImages.push(comment)
-						console.log('5', commentsWithImages)
-					})
-			})
-			console.log('6', commentsWithImages);
-		})
-		.exec()
 		.then(comments => {
-			console.log('7', commentsWithImages);
-			return res.status(200).json({comments: commentsWithImages})
+			let usernames = comments.map(comment => comment.username);
+			User
+				.find()
+				.where('username').in(usernames)
+				.then(users => {
+					comments.forEach(comment => {
+						users.forEach(user => {
+							if (comment.username === user.username) {
+								comment.profilePicURL = user.profilePicURL;
+							}
+						})
+					})
+					return res.status(200).json({comments})
+				})
 		})
 		.catch(err => {
 			res.status(500).json({message: `Internal server error: ${err}`})
@@ -237,7 +242,20 @@ router.get('/users/me/community/:skip', loggedIn, (req, res) => {
 		.sort({date: -1})
 		.limit(10)
 		.then(comments => {
-			return res.status(200).json({comments})
+			let usernames = comments.map(comment => comment.username);
+			User
+				.find()
+				.where('username').in(usernames)
+				.then(users => {
+					comments.forEach(comment => {
+						users.forEach(user => {
+							if (comment.username === user.username) {
+								comment.profilePicURL = user.profilePicURL;
+							}
+						})
+					})
+					return res.status(200).json({comments})
+				})
 		})
 		.catch(err => {
 			res.status(500).json({message: `Internal server error: ${err}`})
