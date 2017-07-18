@@ -136,11 +136,45 @@ router.get('/discussion/:q', loggedIn, (req, res) => {
 // GET most recent discussions
 router.get('/discussions', loggedIn, (req, res) => {
 
+	//console.log(req.params.skip);
+
 	Discussion 
 		.find()
 		.sort({lastActiveDate: -1})
 		.limit(10)
-		.then(discussions => {
+		.then(_discussions => {
+			let discussions = [];
+			_discussions.forEach(disc => {
+				if (disc.comments.length > 0) {
+					discussions.push(disc);
+				}
+			})
+			return res.status(200).json({discussions})
+		})
+		.catch(err => {
+			res.status(500).json({message: 'Internal server error'});
+		});
+});
+
+// GET more recent discussions
+router.get('/discussions/:skip', loggedIn, (req, res) => {
+
+	console.log(req.params.skip);
+
+	const skip = (req.params.skip) * 1;
+
+	Discussion 
+		.find()
+		.sort({lastActiveDate: -1})
+		.skip(skip)
+		.limit(10)
+		.then(_discussions => {
+			let discussions = [];
+			_discussions.forEach(disc => {
+				if (disc.comments.length > 0) {
+					discussions.push(disc);
+				}
+			})
 			return res.status(200).json({discussions})
 		})
 		.catch(err => {
@@ -167,6 +201,28 @@ router.get('/users/me/community', loggedIn, (req, res) => {
 		});
 });
 
+// GET more community activity
+router.get('/users/me/community/:skip', loggedIn, (req, res) => {
+
+	const community = req.user.favoriteUsers;
+	community.push(req.user.username);
+
+	const skip = req.params.skip * 1;
+
+	Comment
+		.find()
+		.where('username').in(community)
+		.skip(skip)
+		.sort({date: -1})
+		.limit(10)
+		.then(comments => {
+			return res.status(200).json({comments})
+		})
+		.catch(err => {
+			res.status(500).json({message: `Internal server error: ${err}`})
+		});
+});
+
 // POST for creating new user account
 router.post('/users/sign-up', (req, res) => {
 
@@ -177,7 +233,7 @@ router.post('/users/sign-up', (req, res) => {
 		return res.status(422).json({message: 'Missing field: username'});
 	}
 
-	let {username, password} = req.body;
+	let {username, password, location, about} = req.body;
 
 	if (typeof username !== 'string') {
 		return res.status(422).json({message: 'Incorrect field type: username'});
@@ -216,8 +272,10 @@ router.post('/users/sign-up', (req, res) => {
 		.then(hash => {
 			return User
 				.create({
-					username: username,
-					password: hash
+					username,
+					password: hash,
+					location,
+					about
 				});
 		})
 		.then(user => {

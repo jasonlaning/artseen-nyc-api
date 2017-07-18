@@ -17,7 +17,8 @@ const userSchema = mongoose.Schema({
 		type: String
 	},
 	about: {
-		type: String
+		type: String,
+		default: 'This is an `about` section. Click to edit.'
 	},
 	profilePicURL: {
 		type: String,
