@@ -15,6 +15,8 @@ app.use(morgan('common'));
 
 app.use('/api/', ApiRouter);
 
+app.use(express.static('public'));
+
 let server;
 
 function runServer(databaseUrl, port=PORT) {

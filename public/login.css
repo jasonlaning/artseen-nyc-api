@@ -1,0 +1,118 @@
+* {
+  box-sizing: border-box;
+}
+
+* button:hover {
+  cursor: pointer;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  background-color: #e6e6e6;
+}
+
+a {
+  text-decoration: none;
+}
+
+.log-in-form .message-box a {
+  color: #a5a5a5;
+  text-decoration: underline;
+}
+
+a:visited {
+  color: inherit;
+}
+
+.site-title a {
+  font-family: 'Roboto Condensed', sans-serif;
+  font-size: 32px;
+  font-weight: 400;
+  color: black;
+}
+
+.container {
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  height: 35px;
+}
+
+.log-in-form, form input, form button {
+  border-radius: 5px;
+}
+
+.log-in-form {
+  background-color: white;
+  padding: 40px 40px 20px 40px;
+}
+
+.log-in-form h1 {
+  margin: 0;
+  padding-bottom: 40px;
+  text-align: center;
+  color: #565656;
+  font-weight: 400;
+}
+
+.log-in-form label, .log-in-form input {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.log-in-form input, .log-in-form button {
+  width: 100%;
+  padding: 15px;
+}
+
+.log-in-form input {
+  color: #222;
+  border: 2px solid #e7e7e7;
+}
+
+.log-in-form button {
+  height: 55px;
+  color: white;
+  font-size: 18px;
+  background-color: #66c470;
+  border: none;
+  margin-bottom: 10px;
+}
+
+.log-in-form button:hover {
+  background-color: #339933;
+}
+
+.forgot-password {
+  font-size: 12px;
+}
+
+.forgot-password:link {
+  color: #a9a9a9;
+}
+
+.message-box {
+  height: 20px;
+}
+
+.js-error-message {
+  color: red;
+  line-height: 20px;
+}
+
+.log-in, .log-in a:link {
+  color: white;
+}
