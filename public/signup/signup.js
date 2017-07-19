@@ -30,6 +30,7 @@ function signUpUser(username, password, location) {
 	  	$('#username').val('');
 		$('#password').val('');
 		$('#location').val('');
+		$('#username').focus();
 	  	if (res.responseJSON.message) {
 	  		var message = res.responseJSON.message;
 	  	} else {
@@ -71,6 +72,7 @@ function signInUser(username, password) {
 		updateMessage('Invalid Password or Username')
 		$('#username').val('');
 		$('#password').val('');
+		$('#username').focus();
 	})
 }
 

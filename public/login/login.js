@@ -42,6 +42,7 @@ function signInUser(username, password) {
 		updateMessage('Invalid Password or Username')
 		$('#username').val('');
 		$('#password').val('');
+		$('#username').focus();
 	})
 }
 
