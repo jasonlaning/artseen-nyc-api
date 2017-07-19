@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Log in to ArtSEEN NYC">
-    <title>ArtSEEN NYC - Log In</title>
+    <meta name="description" content="Create Demo Account - ArtSEEN NYC">
+    <title>ArtSEEN NYC - Demo</title>
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.1.1/normalize.min.css">
 	<link href="https://fonts.googleapis.com/css?family=Fira+Sans+Condensed:400,600" rel="stylesheet">
     <link href="../main.css" rel="stylesheet" type="text/css" />
@@ -18,24 +18,24 @@
 		</div>
 	</nav>
 	<main>
-		<form class="log-in-form" action="" method="get">
+		<form class="sign-up-form" action="" method="get">
 
 			<h3 class="title-container">
-				<span class="title">Sign in to your account</span>
+				<span class="title">Creating Unique Demo Account...</span>
 				<span class="form-message"></span>
 			</h3>
 			<div class="form-container">
 				<label for="username">Username</label>
-				<input type="username" autofocus name="username" id="username" required>
-				<label for="password">Password</label>
-				<input type="password" name="password" id="password" required>
-				<button type="submit">Sign in</button>
+				<input type="username" value="Demo" name="username" id="username" disabled >
+				<label for="location">Location</label>
+				<input type="location" value="New York, New York" name="location" id="location" disabled >
+				<button type="submit" disabled>Sign up</button>
 			</div>
 
 		</form>
 	</main>
       
 	<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-	<script src="login.js"></script>    
+	<script src="demo.js"></script>    
 </body>
 </html>
