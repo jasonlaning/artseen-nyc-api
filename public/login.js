@@ -4,7 +4,7 @@
 function signInUser(username, password) {
 
 	var settings = {
-	  url: "../users/login",
+	  url: "../api/users/login",
 	  method: "GET",
 	  headers: {
 	    'content-type': "application/json",
