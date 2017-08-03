@@ -74,12 +74,17 @@ form button {
   font: inherit;
   border-radius: 5px;
   margin-top: 10px;
+  color: white;
+  background: #333;
+  background: -webkit-linear-gradient(#999, #333);
+  background: -o-linear-gradient(#999, #333);
+  background: -moz-linear-gradient(#999, #333);
+  background: linear-gradient(#999, #333);
 }
 
 form button:hover {
-  background-color: #f1f1f1;
-  color: #666;
   cursor: pointer;
+  background: #333;
 }
 
 button:disabled {
@@ -122,14 +127,6 @@ form input {
   border-radius: 5px;
 }
 
-input, button {
-  -webkit-transition: all 0.30s ease-in-out;
-  -moz-transition: all 0.30s ease-in-out;
-  -ms-transition: all 0.30s ease-in-out;
-  -o-transition: all 0.30s ease-in-out;
-  outline: none;
-}
- 
 input:focus, button:focus {
   box-shadow: 0 0 3px #5181ee;
   border: 1px solid #5181ee;
