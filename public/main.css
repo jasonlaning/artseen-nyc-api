@@ -89,13 +89,13 @@ form button:hover {
 
 button:disabled {
   cursor: default;
-  background-color: white;
+  background: white;
   border: 1px solid #ccc;
   color: #ccc;
 }
 
 button:hover:disabled {
-  background-color: inherit;
+  background: inherit;
   color: #ccc;
   cursor: default;
   border: 1px solid #ccc;
