@@ -11,7 +11,7 @@ const {User} = require('./users/models');
 const {Discussion} = require('./discussions/models');
 const {Comment} = require('./comments/models');
 const {CLIENT_URL} = require('./config');
-const MEMBER_URL = 'https://jasonlaning.github.io/test-repo';
+const MEMBER_URL = 'https://jasonlaning.github.io';
 
 const router = express.Router();
 
