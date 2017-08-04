@@ -4,6 +4,8 @@ const jsonParser = require('body-parser').json();
 const passport = require('passport');
 const moment = require('moment');
 const cors = require('cors');
+const axios = require('axios');
+const {parseString} = require ('xml2js');
 
 const {User} = require('./users/models');
 const {Discussion} = require('./discussions/models');
@@ -66,6 +68,22 @@ function loggedIn(req, res, next) {
 		res.status(400).json({message: 'Please sign in'});
 	}
 }
+
+router.get('/search', (req, res, next) => {
+	axios.get('http://www.nyartbeat.com/list/event_free.en.xml')
+		.then(_res => {
+			parseString(_res.data, (err, result) => {
+				if (err) {
+					throw new Error(err);
+				} else {
+				res.json({result})
+				}
+			})
+		})
+		.catch(err => {
+			res.status(500).json({message: `Internal server error ${err}`});
+		})
+})
 
 // GET for user to sign in
 router.get('/users/login',
