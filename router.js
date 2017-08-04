@@ -280,6 +280,21 @@ router.get('/users/me/community/:skip', loggedIn, (req, res) => {
 		});
 });
 
+router.post('/members', (req, res, next) => {
+
+	axios.get(req.body.url, {
+		headers: {
+			'X-API-Key': 'f3eJCOiKbJ2ZMrlU898kj7q8g11J4hEW5IbJY9Zl'
+		}
+	})
+		.then(result => {
+			res.json({result: result.data})
+		})
+		.catch(err => {
+			res.status(500).json({message: `Internal server error: ${err}`})
+		})
+})
+
 // POST for creating new user account
 router.post('/users/sign-up', (req, res) => {
 
